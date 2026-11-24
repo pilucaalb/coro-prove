@@ -1,0 +1,31 @@
+{
+  "aggiornato": "24/11/2026",
+  "brani": [
+    {
+      "id": "260-nella-notte-dell-errore",
+      "titolo": "260 · Nella notte dell'errore",
+      "cartella": "brani/260-nella-notte-dell-errore",
+      "testo": "testo.lrc",
+      "tempi": "tempi.json",
+      "spartito": "partitura.pdf",
+      "parti": {
+        "soprano": {
+          "cantata": "soprano-cantata.mp3",
+          "suonata": "soprano-suonata.mp3"
+        },
+        "contralto": {
+          "cantata": "contralto-cantata.mp3",
+          "suonata": "contralto-suonata.mp3"
+        },
+        "tenore": {
+          "cantata": "tenore-cantata.mp3",
+          "suonata": "tenore-suonata.mp3"
+        },
+        "basso": {
+          "cantata": "basso-cantata.mp3",
+          "suonata": "basso-suonata.mp3"
+        }
+      }
+    }
+  ]
+}

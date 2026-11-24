@@ -1,0 +1,200 @@
+:root {
+  --sfondo: #faf7f2;
+  --carta: #ffffff;
+  --inchiostro: #1f1a17;
+  --tenue: #6b625b;
+  --bordo: #e2dad0;
+  --accento: #7a2e1d;
+  --accento-chiaro: #f3e6df;
+  --voce: var(--accento);
+  --testo: 1.45rem;
+  --raggio: 14px;
+  --barra: 0px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sfondo: #171412;
+    --carta: #221e1b;
+    --inchiostro: #f4eee8;
+    --tenue: #a99f96;
+    --bordo: #3a332e;
+    --accento: #e08a6f;
+    --accento-chiaro: #3a2620;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 18px; -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--sfondo);
+  color: var(--inchiostro);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.4;
+  padding-bottom: calc(var(--barra) + env(safe-area-inset-bottom));
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: calc(16px + env(safe-area-inset-top)) 16px 24px;
+}
+
+h1 { font-size: 1.6rem; margin: 0.2em 0 0.6em; line-height: 1.2; }
+h2 { font-size: 1.15rem; margin: 1.4em 0 0.5em; color: var(--tenue); font-weight: 600; }
+
+button, .bottone {
+  font: inherit;
+  color: inherit;
+  background: var(--carta);
+  border: 2px solid var(--bordo);
+  border-radius: var(--raggio);
+  min-height: 52px;
+  padding: 0.5em 1em;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  -webkit-tap-highlight-color: transparent;
+}
+button:disabled { opacity: 0.4; cursor: default; }
+button:focus-visible, .bottone:focus-visible { outline: 3px solid var(--accento); outline-offset: 2px; }
+
+.caricamento, .nota { color: var(--tenue); }
+.nota { font-size: 0.95rem; }
+.errore { color: #b91c1c; }
+
+/* ---------- Pagina iniziale ---------- */
+
+.mia-voce {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--carta); border: 2px solid var(--bordo); border-radius: var(--raggio);
+  padding: 10px 12px 10px 16px;
+}
+.mia-voce strong { color: var(--voce); }
+
+.scelta-voci { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.scelta-voci button { min-height: 84px; font-size: 1.15rem; font-weight: 600; flex-direction: column; gap: 2px; }
+.scelta-voci button .lettera,
+.schede-voci .lettera {
+  display: inline-grid; place-items: center;
+  width: 2em; height: 2em; border-radius: 50%;
+  background: var(--c); color: #fff; font-weight: 700;
+}
+
+.elenco-brani { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.elenco-brani button {
+  width: 100%; justify-content: space-between; text-align: left;
+  min-height: 64px; font-size: 1.15rem; font-weight: 600;
+}
+.elenco-brani .offline { font-size: 0.85rem; font-weight: 500; color: #15803d; white-space: nowrap; }
+.elenco-brani .freccia { color: var(--tenue); font-size: 1.4rem; }
+
+.installa {
+  margin-top: 24px; padding: 14px 16px; border-radius: var(--raggio);
+  background: var(--accento-chiaro); font-size: 0.95rem;
+}
+.installa button { margin-top: 8px; }
+
+/* ---------- Pagina del brano ---------- */
+
+.indietro { border: none; background: none; padding-left: 0; color: var(--accento); font-weight: 600; min-height: 44px; }
+
+.schede-voci { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.schede-voci button {
+  flex-direction: column; gap: 4px; padding: 8px 4px; min-height: 76px; font-size: 0.9rem;
+}
+.schede-voci button[aria-pressed="true"] {
+  border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--carta)); font-weight: 700;
+}
+
+.versioni {
+  display: grid; grid-template-columns: 1fr 1fr; margin-top: 10px;
+  border: 2px solid var(--bordo); border-radius: var(--raggio); overflow: hidden;
+}
+.versioni button { border: none; border-radius: 0; min-height: 52px; }
+.versioni button + button { border-left: 2px solid var(--bordo); }
+.versioni button[aria-pressed="true"] { background: var(--voce); color: #fff; font-weight: 700; }
+
+.azioni-brano { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.azioni-brano button, .azioni-brano .bottone { min-height: 44px; font-size: 0.95rem; padding: 0.3em 0.9em; }
+.stato-offline { font-size: 0.95rem; color: #15803d; align-self: center; }
+
+.testo {
+  margin-top: 20px;
+  font-size: var(--testo);
+  line-height: 1.5;
+}
+.testo .riga {
+  padding: 0.15em 0.4em; margin: 0 -0.4em; border-radius: 8px;
+  transition: background-color 0.2s, color 0.2s;
+}
+.testo .riga.temporizzata { cursor: pointer; }
+.testo .riga.passata { color: var(--tenue); }
+.testo .riga.attiva {
+  background: color-mix(in srgb, var(--voce) 18%, transparent);
+  color: var(--inchiostro); font-weight: 700;
+}
+.testo .strofa { height: 0.9em; }
+.testo .titolo-sezione { font-size: 0.75em; color: var(--tenue); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.6em; }
+
+/* ---------- Barra del lettore ---------- */
+
+.lettore {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  background: var(--carta);
+  border-top: 3px solid var(--voce);
+  box-shadow: 0 -4px 18px rgba(0,0,0,0.12);
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+}
+.lettore .dentro { max-width: 720px; margin: 0 auto; }
+
+.chi-suona { font-size: 0.9rem; color: var(--tenue); text-align: center; margin-bottom: 4px; }
+.chi-suona strong { color: var(--voce); }
+
+.avanzamento { display: flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums; font-size: 0.9rem; color: var(--tenue); }
+.avanzamento input { flex: 1; accent-color: var(--voce); height: 32px; }
+
+.comandi { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 4px 0 8px; }
+.comandi button { min-width: 64px; font-size: 1rem; }
+.comandi .suona {
+  width: 76px; height: 76px; border-radius: 50%; font-size: 2rem;
+  background: var(--voce); border-color: var(--voce); color: #fff;
+}
+
+.extra { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.extra button { min-height: 44px; padding: 0.2em 0.7em; font-size: 0.9rem; }
+.extra button[aria-pressed="true"] { background: var(--voce); border-color: var(--voce); color: #fff; font-weight: 700; }
+.extra .gruppo { display: inline-flex; gap: 4px; }
+.extra .ripeti-attivo { background: #b45309; border-color: #b45309; color: #fff; }
+.extra .ripeti-attesa { border-color: #b45309; color: #b45309; font-weight: 700; }
+.info-ripeti { text-align: center; font-size: 0.85rem; color: #b45309; margin-top: 4px; min-height: 1.2em; }
+
+@media (max-width: 380px) {
+  html { font-size: 16px; }
+  .comandi { gap: 8px; }
+}
+
+[hidden] { display: none !important; }
+
+/* ---------- Note sul brano, strofe, respiri ---------- */
+
+.note-brano { margin: -0.3em 0 1em; color: var(--tenue); font-size: 0.95rem; line-height: 1.45; }
+
+.scelta-strofa { margin-bottom: 0.8em; font-size: 1rem; }
+.schede-strofa { display: flex; flex-wrap: wrap; gap: 8px; }
+.schede-strofa button { min-height: 48px; flex: 1; font-size: 1rem; }
+.schede-strofa button[aria-pressed="true"] { background: var(--voce); border-color: var(--voce); color: #fff; font-weight: 700; }
+.di-seguito { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.9rem; color: var(--tenue); }
+.di-seguito input { width: 22px; height: 22px; accent-color: var(--voce); }
+
+.testo .respiro {
+  color: var(--voce); font-weight: 800; margin-left: 0.15em; font-size: 1.15em; line-height: 0;
+}
+.testo .riga.da-scrivere { font-style: italic; color: var(--tenue); font-size: 0.8em; }
