@@ -16,7 +16,7 @@ nessuno store. Si può aggiungere alla schermata Home come un'app vera.
 - Rallenta a 85% o 70% senza cambiare l'intonazione.
 - «Ripeti un pezzo»: tocchi all'inizio e alla fine di un passaggio difficile e lo ripete finché vuoi.
 - Testo ingrandibile (A− / A+), schermo che resta acceso mentre suona, tema scuro automatico.
-- «Salva sul telefono»: la parte resta sul telefono e si prova anche senza internet.
+- «Scarica per l'uso senza internet»: la parte resta sul telefono e si prova anche senza rete (non installa l'app: per quello vedi «Installare l'app sul telefono»).
 
 ## Come è fatta la cartella
 
@@ -177,3 +177,15 @@ I coristi vedono il brano nuovo la prossima volta che aprono l'app.
 **Nota:** il sito è pubblico per chi ha il link (non compare sui motori di ricerca
 se non lo si pubblica altrove). Meglio avvisare la maestra che le sue basi
 saranno raggiungibili così.
+
+## Installare l'app sul telefono
+
+Indirizzo: https://pilucaalb.github.io/coro-prove/
+
+- **Android**: aprire il link con **Chrome** (non con Edge o con il browser Xiaomi o Samsung),
+  menu **⋮** in alto a destra → **Aggiungi a schermata Home** → **Installa**.
+- **iPhone**: aprire il link con **Safari** → **Condividi** → **Aggiungi alla schermata Home**.
+- **Telefoni Xiaomi / Redmi / POCO**: se dopo «Installa» l'icona non compare, il telefono
+  sta bloccando le scorciatoie. Impostazioni → App → Gestisci app → Chrome →
+  Altre autorizzazioni → **Scorciatoie della schermata Home** → Consenti. Poi riprovare.
+  Controllare anche l'elenco di tutte le app: a volte l'icona finisce lì.

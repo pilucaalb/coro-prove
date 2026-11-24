@@ -221,7 +221,7 @@ async function paginaIniziale() {
     const segno = h('span', { class: 'offline' });
     elenco.append(h('li', {}, h('button', { onclick: () => vai('#/brano/' + encodeURIComponent(b.id)) },
       h('span', {}, b.titolo), segno, h('span', { class: 'freccia', 'aria-hidden': 'true' }, '›'))));
-    salvatoOffline(b, st.voce).then(ok => { if (ok) segno.textContent = '✓ sul telefono'; });
+    salvatoOffline(b, st.voce).then(ok => { if (ok) segno.textContent = '✓ scaricato'; });
   }
 
   app.replaceChildren(
@@ -667,9 +667,9 @@ async function aggiornaOffline(bottone, stato) {
   const ok = await salvatoOffline(brano, voce);
   if (st.brano !== brano || st.voce !== voce) return;
   bottone.disabled = false;
-  bottone.textContent = ok ? 'Togli dal telefono' : 'Salva sul telefono';
+  bottone.textContent = ok ? 'Elimina il download' : 'Scarica per l\'uso senza internet';
   bottone.dataset.salvato = ok ? '1' : '';
-  stato.textContent = ok ? '✓ Funziona anche senza internet' : '';
+  stato.textContent = ok ? '✓ Scaricato: funziona anche senza internet' : '';
 }
 
 async function salvaSulTelefono(bottone, stato) {
