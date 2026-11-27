@@ -208,6 +208,7 @@ def prepara_brano(cartella, avvisi):
         avvisi.append(f'{cartella.name}: nessun audio riconosciuto, il brano non compare nell\'app')
         return None
     ordine = ['soprano', 'contralto', 'tenore', 'basso']
+    partiture = trova_partiture(cartella)
     tempi = 'tempi.json' if (cartella / 'tempi.json').exists() else None
     if tempi:
         try:
@@ -226,8 +227,37 @@ def prepara_brano(cartella, avvisi):
         'testo': testo,
         'tempi': tempi,
         'spartito': spartito,
+        'partiture': partiture,
         'parti': {v: parti[v] for v in ordine if v in parti},
     }
+
+
+NOMI_PARTITURE = {'soprano': ('soprano', 'soprani'), 'contralto': ('contralto', 'contralti', 'alto', 'alti'),
+                  'tenore': ('tenore', 'tenori'), 'basso': ('basso', 'bassi')}
+
+
+def trova_partiture(cartella):
+    """Cerca nella sottocartella PARTITURE (o partiture):
+       - le copie stampate per il telefono:   soprano-1.svg, tenore-2.svg … (voce-strofa)
+       - gli originali scritti a mano:        «SOPRANI st1.pdf», «TENORI st2.jpg» …
+    e restituisce {voce: {strofa: {'stampa': …, 'originale': …}}}."""
+    sotto = next((d for d in cartella.iterdir() if d.is_dir() and d.name.lower() == 'partiture'), None)
+    if not sotto:
+        return None
+    risultato = {}
+    for f in sorted(sotto.iterdir()):
+        if not f.is_file():
+            continue
+        nome = f.stem.lower()
+        voce = next((v for v, sin in NOMI_PARTITURE.items() for p in parole(nome) if p in sin), None)
+        if not voce:
+            continue
+        m = re.search(r'(?:st|strofa)\s*(\d+)', nome) or re.search(r'-(\d+)$', nome)
+        strofa = m.group(1) if m else '1'
+        tipo = 'stampa' if f.suffix.lower() == '.svg' else 'originale' if f.suffix.lower() in ESTENSIONI_SPARTITO else None
+        if tipo:
+            risultato.setdefault(voce, {}).setdefault(strofa, {})[tipo] = f'{sotto.name}/{f.name}'
+    return risultato or None
 
 
 def aggiorna_versione_sw():

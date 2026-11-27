@@ -189,3 +189,22 @@ Indirizzo: https://pilucaalb.github.io/coro-prove/
   sta bloccando le scorciatoie. Impostazioni → App → Gestisci app → Chrome →
   Altre autorizzazioni → **Scorciatoie della schermata Home** → Consenti. Poi riprovare.
   Controllare anche l'elenco di tutte le app: a volte l'icona finisce lì.
+
+## Partiture sul telefono
+
+Nella cartella del brano, la sottocartella `PARTITURE/` può contenere:
+
+- gli **originali** scritti a mano, con voce e strofa nel nome: `SOPRANI st1.pdf`, `TENORI st2.pdf`…
+- le **copie stampate** per il telefono, come immagini SVG: `soprano-1.svg`, `tenore-2.svg`… (voce-strofa)
+- in `da-stampare/`, le stesse copie in PDF A4 per la stampa.
+
+`genera_catalogo.py` le trova da solo. Nell'app il pulsante **♫ Partitura** mostra la
+partitura della voce scelta sopra il titolo; un secondo tocco la nasconde. Se per una
+strofa manca la partitura, si vede quella della strofa 1.
+
+## Basi senza presentazione
+
+Le basi della maestra cominciano con una breve presentazione parlata: va tolta prima
+di pubblicarle (per il 260 è già fatto; gli originali sono in `_originali/`, che non
+viene pubblicata). Chiedi a Claude di farlo per i brani nuovi: taglia l'audio e
+ricalcola `tempi.json`.

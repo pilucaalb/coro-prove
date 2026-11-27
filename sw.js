@@ -2,7 +2,7 @@
    Gli audio salvati con «Salva sul telefono» stanno in una cache a parte (coro-audio-v1)
    gestita direttamente dall'app. Lo script genera_catalogo.py aggiorna VERSIONE. */
 
-const VERSIONE = '2026-11-24-2301';
+const VERSIONE = '2026-11-27-2150';
 const CACHE_APP = 'coro-app-' + VERSIONE;
 const FILE_APP = [
   './',

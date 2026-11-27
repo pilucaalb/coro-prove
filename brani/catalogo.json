@@ -1,5 +1,5 @@
 {
-  "aggiornato": "24/11/2026",
+  "aggiornato": "27/11/2026",
   "brani": [
     {
       "id": "260-nella-notte-dell-errore",
@@ -8,6 +8,32 @@
       "testo": "testo.lrc",
       "tempi": "tempi.json",
       "spartito": "partitura.pdf",
+      "partiture": {
+        "basso": {
+          "1": {
+            "originale": "PARTITURE/BASSI st1.pdf",
+            "stampa": "PARTITURE/basso-1.svg"
+          }
+        },
+        "contralto": {
+          "1": {
+            "originale": "PARTITURE/CONTRALTI st1.pdf",
+            "stampa": "PARTITURE/contralto-1.svg"
+          }
+        },
+        "soprano": {
+          "1": {
+            "originale": "PARTITURE/SOPRANI st1.pdf",
+            "stampa": "PARTITURE/soprano-1.svg"
+          }
+        },
+        "tenore": {
+          "1": {
+            "originale": "PARTITURE/TENORI st1.pdf",
+            "stampa": "PARTITURE/tenore-1.svg"
+          }
+        }
+      },
       "parti": {
         "soprano": {
           "cantata": "soprano-cantata.mp3",

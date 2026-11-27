@@ -221,10 +221,10 @@ async function paginaIniziale() {
     const segno = h('span', { class: 'offline' });
     elenco.append(h('li', {}, h('button', { onclick: () => vai('#/brano/' + encodeURIComponent(b.id)) },
       h('span', {}, b.titolo), segno, h('span', { class: 'freccia', 'aria-hidden': 'true' }, '›'))));
-    salvatoOffline(b, st.voce).then(ok => { if (ok) segno.textContent = '✓ scaricato'; });
+    salvatoOffline(b, st.voce).then(ok => { if (ok) segno.textContent = '✓ anche senza internet'; });
   }
 
-  app.replaceChildren(
+  app.replaceChildren(...[
     h('h1', {}, 'Prove del coro'),
     h('div', { class: 'mia-voce' },
       h('span', {}, 'La mia voce: ', h('strong', {}, voce.nome)),
@@ -234,7 +234,8 @@ async function paginaIniziale() {
     h('h2', {}, 'Brani'),
     brani.length ? elenco : h('p', { class: 'nota' }, 'Non ci sono ancora brani.'),
     st.catalogo?.aggiornato ? h('p', { class: 'nota' }, 'Elenco aggiornato il ' + st.catalogo.aggiornato) : null,
-    suggerimentoInstallazione());
+    suggerimentoInstallazione(),
+  ].filter(Boolean));
 }
 
 function suggerimentoInstallazione() {
@@ -278,13 +279,30 @@ async function paginaBrano(brano) {
   const testoBox = h('div', { class: 'testo' }, h('p', { class: 'caricamento' }, 'Caricamento del testo…'));
   const noteBox = h('div', { class: 'note-brano' });
   st.testoBox = testoBox; st.noteBox = noteBox;
-  const statoOffline = h('span', { class: 'stato-offline' });
-  const bottoneOffline = h('button', { onclick: () => salvaSulTelefono(bottoneOffline, statoOffline) });
+  const haPartiture = !!(brano.partiture && Object.keys(brano.partiture).length);
+  const immagine = h('img', { alt: 'Partitura', class: 'immagine-partitura' });
+  const originale = h('a', { class: 'link-originale', target: '_blank', rel: 'noopener' }, 'Originale scritto a mano');
+  const sovrapposta = h('div', { class: 'partitura-sovrapposta', hidden: !st.mostraPartitura }, immagine, originale);
+  const testata = h('div', { class: 'testata-brano' + (st.mostraPartitura ? ' con-partitura' : '') },
+    h('h1', {}, brano.titolo), noteBox, sovrapposta);
+  st.partituraUI = { immagine, originale, sovrapposta, testata };
+  const tastoPartitura = haPartiture ? h('button', {
+    class: 'tasto-partitura', 'aria-pressed': String(!!st.mostraPartitura),
+    onclick: e => {
+      st.mostraPartitura = !st.mostraPartitura;
+      sovrapposta.hidden = !st.mostraPartitura;
+      testata.classList.toggle('con-partitura', st.mostraPartitura);
+      e.currentTarget.setAttribute('aria-pressed', String(st.mostraPartitura));
+      e.currentTarget.textContent = st.mostraPartitura ? '♫ Nascondi partitura' : '♫ Partitura';
+      aggiornaPartitura();
+    },
+  }, st.mostraPartitura ? '♫ Nascondi partitura' : '♫ Partitura') : null;
 
   app.replaceChildren(
-    h('button', { class: 'indietro', onclick: () => vai('#/') }, '‹ Tutti i brani'),
-    h('h1', {}, brano.titolo),
-    noteBox,
+    h('div', { class: 'riga-testata' },
+      h('button', { class: 'indietro', onclick: () => vai('#/') }, '‹ Tutti i brani'),
+      tastoPartitura),
+    testata,
     h('div', { class: 'schede-voci', role: 'group', 'aria-label': 'Voce' },
       VOCI.map(v => h('button', {
         vars: { '--c': v.colore },
@@ -299,14 +317,14 @@ async function paginaBrano(brano) {
         onclick: () => cambiaVersione(v.id),
       }, v.nome))),
     h('div', { class: 'azioni-brano' },
-      bottoneOffline, statoOffline,
+      tastoIcona(),
       brano.spartito ? h('a', { class: 'bottone', href: percorso(brano, brano.spartito), target: '_blank', rel: 'noopener' }, 'Apri lo spartito') : null,
       h('span', { class: 'gruppo' },
         h('button', { 'aria-label': 'Testo più piccolo', onclick: () => grandezzaTesto(-0.2) }, 'A−'),
         h('button', { 'aria-label': 'Testo più grande', onclick: () => grandezzaTesto(+0.2) }, 'A+'))),
     testoBox);
 
-  aggiornaOffline(bottoneOffline, statoOffline);
+  aggiornaPartitura();
   mostraBarra();
   impostaColoreVoce();
   grandezzaTesto(0);
@@ -382,7 +400,51 @@ function disegnaTesto() {
     sincronizzato ? null : h('p', { class: 'nota' }, 'Il testo non è ancora sincronizzato con la musica: scorrilo a mano.'),
     vuote ? h('p', { class: 'nota' }, 'Le righe tra parentesi sono ancora da scrivere nel file testo.lrc.') : null,
   ].filter(Boolean));
+  aggiornaPartitura();
   evidenziaRiga(true);
+}
+
+/* Partitura della voce scelta per la strofa scelta (se manca, quella della strofa 1). */
+function partituraCorrente() {
+  const p = st.brano?.partiture?.[st.voce];
+  if (!p) return null;
+  return p[String((st.strofa ?? 0) + 1)] || p['1'] || null;
+}
+
+function aggiornaPartitura() {
+  const ui = st.partituraUI, p = partituraCorrente();
+  if (!ui) return;
+  if (!p) { ui.immagine.removeAttribute('src'); ui.originale.hidden = true; return; }
+  const src = percorso(st.brano, p.stampa || p.originale);
+  if (ui.immagine.getAttribute('src') !== src) ui.immagine.src = src;
+  ui.originale.hidden = !p.originale || !p.stampa;
+  if (p.originale) ui.originale.href = percorso(st.brano, p.originale);
+}
+
+/* «Crea icona sullo smartphone»: installa l'app (Chrome) o spiega come fare. */
+function installata() {
+  return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+}
+
+function tastoIcona() {
+  if (installata()) return null;
+  const aiuto = h('div', { class: 'aiuto-icona', hidden: true });
+  const tasto = h('button', { onclick: async () => {
+    if (st.installa) {
+      st.installa.prompt();
+      const { outcome } = await st.installa.userChoice;
+      st.installa = null;
+      if (outcome === 'accepted') tasto.remove();
+      return;
+    }
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    aiuto.replaceChildren(ios
+      ? 'Apri questa pagina con Safari, tocca Condividi (il quadrato con la freccia) e poi «Aggiungi alla schermata Home».'
+      : 'Apri questa pagina con Google Chrome, tocca il menu ⋮ in alto a destra e poi «Aggiungi a schermata Home» → «Installa».');
+    aiuto.hidden = !aiuto.hidden;
+  } }, 'Crea icona sullo smartphone');
+  return h('span', { class: 'gruppo-icona' }, tasto, aiuto);
 }
 
 function grandezzaTesto(delta) {
@@ -511,9 +573,8 @@ function mostraBarra() {
         }),
         h('span', { id: 'tempo-tot' }, '0:00')),
       h('div', { class: 'comandi' },
-        h('button', { 'aria-label': 'Indietro di 5 secondi', onclick: () => salta(-5) }, '↺ 5'),
         h('button', { id: 'suona', class: 'suona', 'aria-label': 'Suona', onclick: () => audio.paused ? suona() : audio.pause() }, '▶'),
-        h('button', { 'aria-label': 'Avanti di 5 secondi', onclick: () => salta(5) }, '5 ↻')),
+),
       h('div', { class: 'extra' },
         h('span', { class: 'gruppo', role: 'group', 'aria-label': 'Velocità' },
           VELOCITA.map(v => h('button', {
@@ -616,7 +677,7 @@ function ciclo() {
   if (!audio.paused) requestAnimationFrame(ciclo);
 }
 
-audio.addEventListener('play', () => { aggiornaBarra(); requestAnimationFrame(ciclo); tieniSchermoAcceso(true); });
+audio.addEventListener('play', () => { aggiornaBarra(); requestAnimationFrame(ciclo); tieniSchermoAcceso(true); salvaInSilenzio(); });
 audio.addEventListener('pause', () => { aggiornaBarra(); tieniSchermoAcceso(false); });
 audio.addEventListener('ended', () => {
   if (st.ripetiA !== null) { audio.currentTime = st.ripetiDa; suona(); return; }
@@ -651,7 +712,9 @@ document.addEventListener('visibilitychange', () => {
 
 function fileDellaVoce(brano, voce) {
   const parte = brano.parti[voce] || {};
-  return [brano.testo, ...VERSIONI.map(v => parte[v.id])].filter(Boolean).map(f => percorso(brano, f));
+  const partiture = Object.values(brano.partiture?.[voce] || {}).map(p => p.stampa || p.originale);
+  return [brano.testo, brano.tempi, ...VERSIONI.map(v => parte[v.id]), ...partiture]
+    .filter(Boolean).map(f => percorso(brano, f));
 }
 
 async function salvatoOffline(brano, voce) {
@@ -661,40 +724,21 @@ async function salvatoOffline(brano, voce) {
   return true;
 }
 
-async function aggiornaOffline(bottone, stato) {
-  const brano = st.brano, voce = st.voce;
-  if (!(await cacheAudio())) { bottone.remove(); return; }
-  const ok = await salvatoOffline(brano, voce);
-  if (st.brano !== brano || st.voce !== voce) return;
-  bottone.disabled = false;
-  bottone.textContent = ok ? 'Elimina il download' : 'Scarica per l\'uso senza internet';
-  bottone.dataset.salvato = ok ? '1' : '';
-  stato.textContent = ok ? '✓ Scaricato: funziona anche senza internet' : '';
-}
-
-async function salvaSulTelefono(bottone, stato) {
+/* Appena si ascolta una voce, i suoi file restano sul telefono: la volta dopo funziona anche senza rete. */
+async function salvaInSilenzio() {
   const brano = st.brano, voce = st.voce;
   const c = await cacheAudio();
-  if (!c) return;
-  bottone.disabled = true;
-  if (bottone.dataset.salvato) {
-    for (const f of fileDellaVoce(brano, voce)) await c.delete(f);
-    return aggiornaOffline(bottone, stato);
-  }
-  stato.textContent = 'Salvataggio in corso…';
+  if (!c || !brano || st.salvando) return;
+  st.salvando = true;
   try {
-    if (navigator.storage?.persist) navigator.storage.persist();
+    if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
     for (const f of fileDellaVoce(brano, voce)) {
-      const r = await fetch(f, { cache: 'no-cache' });
-      if (!r.ok) throw new Error(f);
-      await c.put(f, r);
+      if (await c.match(f)) continue;
+      const r = await fetch(f);
+      if (r.ok) await c.put(f, r);
     }
-    aggiornaOffline(bottone, stato);
-    if (audio.paused) preparaAudio({ mantieniTempo: true });
-  } catch {
-    stato.textContent = 'Salvataggio non riuscito: controlla la connessione.';
-    bottone.disabled = false;
-  }
+  } catch { /* senza rete: si riproverà */ }
+  st.salvando = false;
 }
 
 /* ---------- Avvio ---------- */

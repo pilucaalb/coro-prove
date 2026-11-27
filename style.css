@@ -198,3 +198,27 @@ button:focus-visible, .bottone:focus-visible { outline: 3px solid var(--accento)
   color: var(--voce); font-weight: 800; margin-left: 0.15em; font-size: 1.15em; line-height: 0;
 }
 .testo .riga.da-scrivere { font-style: italic; color: var(--tenue); font-size: 0.8em; }
+
+/* ---------- Partitura sopra il titolo ---------- */
+
+.riga-testata { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tasto-partitura { min-height: 44px; padding: 0.3em 0.9em; font-size: 0.95rem; font-weight: 600; }
+.tasto-partitura[aria-pressed="true"] { background: var(--voce); border-color: var(--voce); color: #fff; }
+
+.testata-brano { position: relative; }
+.testata-brano.con-partitura { min-height: min(62vw, 330px); }
+.partitura-sovrapposta {
+  position: absolute; inset: 0; z-index: 2;
+  background: #fff; border: 2px solid var(--bordo); border-radius: var(--raggio);
+  padding: 6px; display: flex; flex-direction: column; align-items: center;
+}
+.immagine-partitura { flex: 1; width: 100%; min-height: 0; object-fit: contain; }
+.link-originale { align-self: flex-end; font-size: 0.8rem; color: #555; padding: 2px 4px; }
+
+/* ---------- Icona sullo smartphone ---------- */
+
+.gruppo-icona { display: inline-flex; flex-direction: column; gap: 6px; }
+.aiuto-icona {
+  font-size: 0.9rem; background: var(--accento-chiaro); border-radius: 10px;
+  padding: 8px 12px; max-width: 32em;
+}
