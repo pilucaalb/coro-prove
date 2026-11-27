@@ -2,7 +2,7 @@
    Gli audio salvati con «Salva sul telefono» stanno in una cache a parte (coro-audio-v1)
    gestita direttamente dall'app. Lo script genera_catalogo.py aggiorna VERSIONE. */
 
-const VERSIONE = '2026-11-27-2150';
+const VERSIONE = '2026-11-27-2206';
 const CACHE_APP = 'coro-app-' + VERSIONE;
 const FILE_APP = [
   './',
@@ -32,15 +32,17 @@ self.addEventListener('fetch', e => {
   // Audio, testi e catalogo li gestisce l'app (rete, poi copia salvata)
   if (url.pathname.includes('/brani/')) return;
 
-  // File dell'app: subito dalla copia salvata, e intanto si scarica la versione nuova
+  // File dell'app: prima la rete (così gli aggiornamenti arrivano subito),
+  // se non c'è rete la copia salvata sul telefono.
   e.respondWith(
     caches.open(CACHE_APP).then(async c => {
-      const richiesta = e.request.mode === 'navigate' ? 'index.html' : e.request;
-      const salvata = await c.match(richiesta, { ignoreSearch: true });
-      const dallaRete = fetch(e.request).then(r => {
-        if (r.ok && e.request.mode !== 'navigate') c.put(e.request, r.clone());
+      const chiave = e.request.mode === 'navigate' ? 'index.html' : e.request;
+      try {
+        const r = await fetch(e.request, { cache: 'no-cache' });
+        if (r.ok) c.put(chiave, r.clone());
         return r;
-      }).catch(() => salvata);
-      return salvata || dallaRete;
+      } catch {
+        return (await c.match(chiave, { ignoreSearch: true })) || Response.error();
+      }
     }));
 });

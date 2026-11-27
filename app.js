@@ -299,9 +299,7 @@ async function paginaBrano(brano) {
   }, st.mostraPartitura ? '♫ Nascondi partitura' : '♫ Partitura') : null;
 
   app.replaceChildren(
-    h('div', { class: 'riga-testata' },
-      h('button', { class: 'indietro', onclick: () => vai('#/') }, '‹ Tutti i brani'),
-      tastoPartitura),
+    h('button', { class: 'indietro', onclick: () => vai('#/') }, '‹ Tutti i brani'),
     testata,
     h('div', { class: 'schede-voci', role: 'group', 'aria-label': 'Voce' },
       VOCI.map(v => h('button', {
@@ -318,6 +316,7 @@ async function paginaBrano(brano) {
       }, v.nome))),
     h('div', { class: 'azioni-brano' },
       tastoIcona(),
+      tastoPartitura,
       brano.spartito ? h('a', { class: 'bottone', href: percorso(brano, brano.spartito), target: '_blank', rel: 'noopener' }, 'Apri lo spartito') : null,
       h('span', { class: 'gruppo' },
         h('button', { 'aria-label': 'Testo più piccolo', onclick: () => grandezzaTesto(-0.2) }, 'A−'),
@@ -443,7 +442,7 @@ function tastoIcona() {
       ? 'Apri questa pagina con Safari, tocca Condividi (il quadrato con la freccia) e poi «Aggiungi alla schermata Home».'
       : 'Apri questa pagina con Google Chrome, tocca il menu ⋮ in alto a destra e poi «Aggiungi a schermata Home» → «Installa».');
     aiuto.hidden = !aiuto.hidden;
-  } }, 'Crea icona sullo smartphone');
+  } }, 'Crea icona');
   return h('span', { class: 'gruppo-icona' }, tasto, aiuto);
 }
 
@@ -559,22 +558,18 @@ function salta(sec) {
 
 function mostraBarra() {
   if (barra) { barra.remove(); }
-  const voce = voceDa(st.voce);
   barra = h('div', { class: 'lettore', role: 'region', 'aria-label': 'Lettore' },
     h('div', { class: 'dentro' },
-      h('div', { class: 'chi-suona' },
-        h('strong', {}, voce?.nome ?? ''), ' · ', h('span', { id: 'nome-versione' }, versioneDa(st.versione)?.nome ?? '')),
-      h('div', { class: 'avanzamento' },
-        h('span', { id: 'tempo-ora' }, '0:00'),
-        h('input', {
-          id: 'cursore', type: 'range', min: 0, max: 1, step: 0.1, value: 0, 'aria-label': 'Posizione',
-          oninput: e => { st.trascinando = true; $('#tempo-ora').textContent = minuti(+e.target.value); },
-          onchange: e => { st.trascinando = false; audio.currentTime = +e.target.value; evidenziaRiga(true); },
-        }),
-        h('span', { id: 'tempo-tot' }, '0:00')),
-      h('div', { class: 'comandi' },
+      h('div', { class: 'riga-lettore' },
         h('button', { id: 'suona', class: 'suona', 'aria-label': 'Suona', onclick: () => audio.paused ? suona() : audio.pause() }, '▶'),
-),
+        h('div', { class: 'avanzamento' },
+          h('span', { id: 'tempo-ora' }, '0:00'),
+          h('input', {
+            id: 'cursore', type: 'range', min: 0, max: 1, step: 0.1, value: 0, 'aria-label': 'Posizione',
+            oninput: e => { st.trascinando = true; $('#tempo-ora').textContent = minuti(+e.target.value); },
+            onchange: e => { st.trascinando = false; audio.currentTime = +e.target.value; evidenziaRiga(true); },
+          }),
+          h('span', { id: 'tempo-tot' }, '0:00'))),
       h('div', { class: 'extra' },
         h('span', { class: 'gruppo', role: 'group', 'aria-label': 'Velocità' },
           VELOCITA.map(v => h('button', {
@@ -583,7 +578,7 @@ function mostraBarra() {
             onclick: () => impostaVelocita(v),
           }, Math.round(v * 100) + '%'))),
         h('button', { id: 'ripeti', onclick: tastoRipeti }, 'Ripeti un pezzo'),
-        h('button', { id: 'salta-intro', hidden: true, onclick: saltaPresentazione }, 'Salta la presentazione ⏭')),
+        h('button', { id: 'salta-intro', hidden: true, onclick: saltaPresentazione }, 'Salta l\'inizio ⏭')),
       h('div', { class: 'info-ripeti', id: 'info-ripeti' })));
   document.body.append(barra);
   new ResizeObserver(() => document.body.style.setProperty('--barra', barra ? barra.offsetHeight + 'px' : '0px')).observe(barra);
@@ -663,9 +658,13 @@ function evidenziaRiga(forza = false) {
   const el = document.querySelector(`.testo .riga[data-i="${attiva}"]`);
   if (el) {
     const r = el.getBoundingClientRect();
-    const alto = window.innerHeight - (barra?.offsetHeight ?? 0);
-    if (r.top < alto * 0.2 || r.bottom > alto * 0.65) {
-      window.scrollTo({ top: window.scrollY + r.top - alto * 0.35, behavior: 'smooth' });
+    const basso = window.innerHeight - (barra?.offsetHeight ?? 0);
+    // se la partitura è aperta resta ferma in alto: il testo scorre nello spazio sotto
+    const sopra = st.mostraPartitura && st.partituraUI
+      ? Math.max(0, st.partituraUI.testata.getBoundingClientRect().bottom) : 0;
+    const spazio = basso - sopra;
+    if (r.top < sopra + spazio * 0.1 || r.bottom > sopra + spazio * 0.7) {
+      window.scrollTo({ top: window.scrollY + r.top - (sopra + spazio * 0.25), behavior: 'smooth' });
     }
   }
 }
@@ -764,7 +763,15 @@ window.addEventListener('beforeinstallprompt', e => {
 window.addEventListener('hashchange', mostra);
 
 (async function avvio() {
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator) {
+    // Quando arriva una versione nuova dell'app, la pagina si ricarica da sola una volta
+    const cera = !!navigator.serviceWorker.controller;
+    let ricaricata = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (cera && !ricaricata) { ricaricata = true; location.reload(); }
+    });
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
   grandezzaTesto(0);
   pref.set('velocitaSessione', 1);
   await caricaCatalogo();
